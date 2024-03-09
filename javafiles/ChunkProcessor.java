@@ -1,4 +1,4 @@
-mport java.io.BufferedReader;
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -37,12 +37,41 @@ public class ChunkProcessor {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         try {
-                            // Validate JSON structure and extract features
+                            // Validate JSON structure and extract features for analytics
                             JSONObject jsonObject = new JSONObject(line);
                             JSONObject filteredJsonObject = new JSONObject();
+
+                            // General
                             filteredJsonObject.put("match_id", jsonObject.get("match_id"));
-                            filteredJsonObject.put("duration", jsonObject.get("duration"));
-                            filteredJsonObject.put("game_mode", jsonObject.get("game_mode"));
+                            filteredJsonObject.put("radiant_win", jsonObject.get("radiant_win"));
+
+                            // Feature 1: First blood time
+                            filteredJsonObject.put("first_blood_time", jsonObject.get("first_blood_time"));
+
+                            // Feature 2: Hero selection and winning rate
+                            JSONArray players = jsonObject.getJSONArray("players");
+                            JSONArray heroIds = new JSONArray();
+                            for (int i = 0; i < players.length(); i++) {
+                                JSONObject player = players.getJSONObject(i);
+                                heroIds.put(player.getInt("hero_id"));
+                            }
+                            filteredJsonObject.put("hero_ids", heroIds);
+
+                            // Feature 3: Teamfights
+                            JSONArray teamfights = jsonObject.getJSONArray("teamfights");
+                            filteredJsonObject.put("teamfights", teamfights);
+
+                            // Feature 5: Most played/banned hero
+                            if(jsonObject.has("picks_bans")) {
+                                filteredJsonObject.put("picks_bans", jsonObject.get("picks_bans"));
+                            }
+
+                            // Feature 6: Economic lead and win rate
+                            JSONArray radiantGoldAdv = jsonObject.getJSONArray("radiant_gold_adv");
+                            if (radiantGoldAdv.length() >= 10) {
+                                filteredJsonObject.put("10_min_radiant_gold_adv", radiantGoldAdv.getInt(10));
+                            }
+
                             line = filteredJsonObject.toString();
                             cleanedData.append(line).append(",\n");
                         } catch (JSONException e) {
@@ -79,7 +108,7 @@ public class ChunkProcessor {
             }
 
             // Sleep before checking again
-            TimeUnit.SECONDS.sleep(10);
+            TimeUnit.SECONDS.sleep(1);
         }
 
         // Close connection (in a finally block for guaranteed cleanup)
