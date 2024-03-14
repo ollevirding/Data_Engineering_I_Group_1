@@ -18,11 +18,11 @@ public class ChunkProcessor {
     public static void main(String[] args) throws IOException, InterruptedException {
         // Configure HDFS connection
         Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://localhost:9000"); // Replace with your namenode address
+        conf.set("fs.defaultFS", "hdfs://de-i-1-master:9000");
         FileSystem fs = FileSystem.get(conf);
 
         // Define base path and data node ID extraction (modify as needed)
-        Path chunkBasePath = new Path("/path/to/chunks/");
+        Path chunkBasePath = new Path("/yasp-chunks_test/");
         String dataNodeId = InetAddress.getLocalHost().getHostName().split("-")[1]; // Assuming hostname format DN-<id>
 
         while (true) {
@@ -90,7 +90,7 @@ public class ChunkProcessor {
                 }
 
                 // Convert and send data as JSON to master node
-                Path outputPath = new Path("/path/to/output/" + dataNodeId + "_" + chunkPath.getName() + ".json");
+                Path outputPath = new Path("/yasp-chunks_test_output/" + dataNodeId + "_" + chunkPath.getName() + ".json");
                 try (OutputStreamWriter writer = new OutputStreamWriter(fs.create(outputPath))) {
                     writer.write(cleanedData.toString()); // No need for additional formatting
                 } catch (IOException e) {
